@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nfa_file_exchange — BM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #0b1424;
+  --bg2:       #0e1a2e;
+  --panel:     #101d33;
+  --panel2:    #14233c;
+  --border:    #1f3252;
+  --accent:    #3b82f6;
+  --accent2:   #60a5fa;
+  --green:     #34d399;
+  --red:       #f87171;
+  --gold:      #fbbf24;
+  --purple:    #a78bfa;
+  --text:      #e8edf7;
+  --muted:     #6f83a6;
+  --hover:     #16273f;
+  --radius:    10px;
+}
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; font-size:14px; }
+
+/* ── SIDEBAR ── */
+aside { width:230px; min-height:100vh; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:20px 0; flex-shrink:0; }
+.brand { display:flex; align-items:center; gap:10px; padding:0 20px 18px; }
+.brand-mark { width:34px; height:34px; border-radius:9px; flex-shrink:0; background:linear-gradient(135deg,var(--accent),var(--purple)); display:flex; align-items:center; justify-content:center; }
+.brand-name { font-size:14.5px; font-weight:700; letter-spacing:.2px; }
+.brand-sub { font-size:10.5px; color:var(--muted); }
+
+.profile-block { display:flex; align-items:center; gap:10px; padding:14px 20px; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:10px; }
+.profile-avatar { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,var(--gold),var(--red)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
+.profile-name { font-size:13.5px; font-weight:700; }
+.profile-meta { font-size:10.5px; color:var(--muted); }
+
+nav { flex:1; padding:6px 12px; }
+nav a { display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px; font-size:13.5px; font-weight:500; color:var(--muted); text-decoration:none; transition:background .15s,color .15s; margin-bottom:2px; cursor:pointer; }
+nav a:hover { background:var(--hover); color:var(--text); }
+nav a.active { background:rgba(59,130,246,.15); color:var(--accent2); }
+nav a svg { opacity:.75; flex-shrink:0; }
+nav a.active svg { opacity:1; }
+.nav-count { margin-left:auto; font-size:10.5px; font-weight:800; background:var(--accent); color:#fff; border-radius:20px; padding:1px 7px; min-width:18px; text-align:center; }
+.nav-count.hide { display:none; }
+.nav-divider { height:1px; background:var(--border); margin:12px 20px; }
+.sidebar-foot { padding:10px 20px 4px; font-size:10.5px; color:var(--muted); }
+
+/* ── MAIN ── */
+main { flex:1; overflow-y:auto; background:var(--bg); }
+.page { display:none; padding:24px 32px 40px; }
+.page.active { display:block; }
+
+.topbar { display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+.topbar h1 { font-size:21px; font-weight:800; letter-spacing:-.2px; }
+.status-pill { display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; padding:5px 12px; border-radius:20px; border:1px solid rgba(248,113,113,.4); color:var(--red); background:rgba(248,113,113,.1); }
+.status-pill.online { border-color:rgba(52,211,153,.4); color:var(--green); background:rgba(52,211,153,.1); }
+.status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.search-bar { display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:9px 14px; flex:1; min-width:220px; max-width:420px; }
+.search-bar input { background:none; border:none; outline:none; color:var(--text); font-size:13px; width:100%; }
+.search-bar input::placeholder { color:var(--muted); }
+
+/* ── STAT CARDS ── */
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+.stat-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+.stat-label { font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:8px; }
+.stat-value { font-size:24px; font-weight:800; }
+.stat-value.gold { color:var(--gold); }
+.stat-value.green { color:var(--green); }
+.stat-value.accent { color:var(--accent2); }
+.stat-value.red { color:var(--red); }
+
+/* ── FILTER TABS ── */
+.filter-tabs { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+.filter-tab { display:inline-flex; align-items:center; gap:7px; background:var(--panel); border:1px solid var(--border); color:var(--muted); border-radius:9px; padding:8px 15px; font-size:12.5px; font-weight:600; cursor:pointer; transition:border-color .15s,color .15s,background .15s; }
+.filter-tab:hover { color:var(--text); border-color:rgba(59,130,246,.4); }
+.filter-tab.active { background:rgba(59,130,246,.15); border-color:var(--accent); color:var(--accent2); }
+
+/* ── CARD / LIST ── */
+.card { background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.list-head { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border); font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+.card-title-row { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); font-size:14px; font-weight:700; }
+
+.file-row { display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid var(--border); transition:background .12s; }
+.file-row:last-child { border-bottom:none; }
+.file-row:hover { background:var(--hover); }
+
+.file-icon { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.file-icon.pdf  { background:rgba(248,113,113,.15); }
+.file-icon.doc  { background:rgba(59,130,246,.15); }
+.file-icon.xls  { background:rgba(52,211,153,.15); }
+.file-icon.img  { background:rgba(251,191,36,.15); }
+.file-icon.misc { background:rgba(167,139,250,.15); }
+
+.file-main { flex:1; min-width:0; cursor:pointer; }
+.file-title { font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.file-sub { font-size:11.5px; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.file-sub .dot { width:3px; height:3px; border-radius:50%; background:var(--muted); }
+.file-sub .sub-other { color:var(--purple); font-weight:700; }
+
+.status-badge { font-size:10.5px; padding:4px 11px; border-radius:20px; font-weight:700; white-space:nowrap; display:flex; align-items:center; gap:5px; flex-shrink:0; }
+.status-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.status-badge.approved { background:rgba(52,211,153,.15); color:var(--green); }
+.status-badge.pending  { background:rgba(251,191,36,.15);  color:var(--gold); }
+.status-badge.review   { background:rgba(59,130,246,.15); color:var(--accent2); }
+.status-badge.sent     { background:rgba(167,139,250,.15); color:var(--purple); }
+.status-badge.returned { background:rgba(248,113,113,.15); color:var(--red); }
+
+.row-actions { display:flex; gap:6px; align-items:center; flex-shrink:0; }
+.action-btn { background:none; border:1px solid var(--border); color:var(--muted); border-radius:7px; padding:6px 12px; font-size:11.5px; font-weight:600; cursor:pointer; transition:border-color .15s,color .15s; white-space:nowrap; }
+.action-btn:hover { border-color:var(--accent); color:var(--accent2); }
+.action-btn.approve-btn:hover { border-color:var(--green); color:var(--green); }
+.action-btn.return-btn:hover { border-color:var(--red); color:var(--red); }
+
+.kebab-btn { background:none; border:1px solid var(--border); color:var(--muted); border-radius:7px; width:30px; height:30px; flex-shrink:0; font-size:16px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s,color .15s,background .15s; }
+.kebab-btn:hover, .kebab-btn.open { border-color:var(--accent); color:var(--accent2); background:rgba(59,130,246,.1); }
+.kebab-menu { display:none; position:fixed; z-index:1500; background:var(--panel); border:1px solid var(--border); border-radius:12px; width:240px; box-shadow:0 10px 30px rgba(0,0,0,.55); padding:8px 0; font-size:13.5px; overflow:hidden; }
+.kebab-menu.open { display:block; }
+.kebab-file-label { font-size:11px; color:var(--muted); padding:4px 18px 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-bottom:1px solid var(--border); margin-bottom:6px; }
+.kebab-item { display:flex; align-items:center; gap:12px; padding:12px 18px; border-radius:0; cursor:pointer; color:var(--text); user-select:none; font-weight:500; }
+.kebab-item:hover { background:var(--hover); }
+.kebab-item.approve { color:var(--green); }
+.kebab-item.approve:hover { background:rgba(52,211,153,.12); }
+.kebab-item.return { color:var(--red); }
+.kebab-item.return:hover { background:rgba(248,113,113,.12); }
+.kebab-item.disabled { color:var(--muted); cursor:default; }
+.kebab-item.disabled:hover { background:none; }
+.kebab-divider { height:1px; background:var(--border); margin:6px 0; }
+
+.empty-state { padding:60px 20px; text-align:center; color:var(--muted); font-size:13px; }
+
+/* ── ACTIVITY ── */
+.activity-list { display:flex; flex-direction:column; }
+.act-item { display:flex; gap:12px; align-items:flex-start; padding:14px 20px; border-bottom:1px solid var(--border); }
+.act-item:last-child { border-bottom:none; }
+.act-dot { width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.act-dot.blue   { background:var(--accent); }
+.act-dot.green  { background:var(--green); }
+.act-dot.purple { background:var(--purple); }
+.act-dot.gold   { background:var(--gold); }
+.act-dot.red    { background:var(--red); }
+.act-text { font-size:13px; line-height:1.5; }
+.act-time { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* ══════ MODAL ══════ */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(4,8,16,.7); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.view-modal { background:var(--panel); border:1px solid var(--border); border-radius:14px; width:520px; max-width:94vw; max-height:90vh; overflow:hidden; display:flex; flex-direction:column; }
+.modal-header { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--border); }
+.modal-title { font-size:14.5px; font-weight:700; }
+.modal-close { background:none; border:none; color:var(--muted); font-size:19px; cursor:pointer; }
+.modal-close:hover { color:var(--text); }
+.view-modal-body { padding:22px; overflow-y:auto; flex:1; }
+.doc-preview { background:var(--hover); border:1px solid var(--border); border-radius:10px; padding:28px 20px; text-align:center; margin-bottom:18px; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.doc-preview .doc-big-icon { font-size:44px; }
+.doc-preview .doc-preview-name { font-size:13.5px; font-weight:700; word-break:break-all; }
+.doc-preview .doc-preview-sub { font-size:11.5px; color:var(--muted); }
+.doc-meta { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.meta-item { background:var(--hover); border-radius:8px; padding:11px 13px; }
+.meta-label { font-size:9.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:4px; }
+.meta-value { font-size:12.5px; font-weight:600; }
+.sent-to-label { font-size:10.5px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:9px; }
+.sent-to-chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:18px; }
+.sent-to-chip { background:rgba(167,139,250,.12); border:1px solid rgba(167,139,250,.3); color:var(--purple); border-radius:6px; padding:5px 11px; font-size:11.5px; font-weight:700; }
+.send-note-label { font-size:11px; color:var(--muted); margin-bottom:6px; }
+.send-note { width:100%; background:var(--hover); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:10px 13px; font-size:13px; font-family:inherit; resize:vertical; min-height:64px; outline:none; }
+.send-note:focus { border-color:var(--accent); }
+.modal-footer { padding:14px 22px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; }
+.modal-btn-secondary { background:none; border:1px solid var(--border); color:var(--muted); border-radius:8px; padding:8px 16px; font-size:12.5px; cursor:pointer; }
+.modal-btn-secondary:hover { border-color:var(--accent); color:var(--accent2); }
+.modal-btn-approve { background:var(--green); color:#08130f; border:none; border-radius:8px; padding:8px 16px; font-size:12.5px; font-weight:700; cursor:pointer; }
+.modal-btn-approve:hover { opacity:.87; }
+.modal-btn-return { background:rgba(248,113,113,.15); border:1px solid rgba(248,113,113,.4); color:var(--red); border-radius:8px; padding:8px 16px; font-size:12.5px; font-weight:700; cursor:pointer; }
+.modal-btn-return:hover { background:rgba(248,113,113,.25); }
+
+.toast { position:fixed; bottom:26px; right:26px; background:var(--panel); border:1px solid var(--green); border-radius:10px; padding:12px 18px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,.5); z-index:2000; opacity:0; transform:translateY(12px); transition:opacity .25s,transform .25s; pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast-icon { color:var(--green); font-size:16px; }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside>
+  <div class="profile-block" style="border-top:none">
+    <div class="profile-avatar">BM</div>
+    <div><div class="profile-name">Branch Manager</div><div class="profile-meta">Department · BM</div></div>
+  </div>
+
+  <nav>
+    <a class="active" onclick="switchPage('inbox',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+      Inbox<span class="nav-count" id="navCountInbox">0</span>
+    </a>
+    <a onclick="switchPage('approved',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Approved
+    </a>
+    <a onclick="switchPage('returned',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Returned
+    </a>
+    <a onclick="switchPage('all',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      All Documents
+    </a>
+    <a onclick="switchPage('activity',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Activity
+    </a>
+    <div class="nav-divider"></div>
+  </nav>
+  <div class="sidebar-foot">Admin server · TCP 9876</div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main>
+
+  <!-- INBOX (pending / needs review) -->
+  <div class="page active" id="page-inbox">
+    <div class="topbar">
+      <h1>BM Inbox</h1>
+      <div class="search-bar">
+        <svg width="14" height="14" fill="none" stroke="#6f83a6" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search documents..." oninput="filterDocs(this.value)">
+      </div>
+      <span class="status-pill" id="connPill"><span class="status-dot"></span>Offline</span>
+    </div>
+
+
+    <div class="card">
+      <div class="card-title-row">Needs Your Review</div>
+      <div id="inboxListBody"></div>
+    </div>
+  </div>
+
+  <!-- APPROVED -->
+  <div class="page" id="page-approved">
+    <div class="topbar"><h1>Approved by BM</h1></div>
+    <div class="card">
+      <div class="card-title-row">Approved Documents</div>
+      <div id="approvedListBody"></div>
+    </div>
+  </div>
+
+  <!-- RETURNED -->
+  <div class="page" id="page-returned">
+    <div class="topbar"><h1>Returned for Revision</h1></div>
+    <div class="card">
+      <div class="card-title-row">Returned Documents</div>
+      <div id="returnedListBody"></div>
+    </div>
+  </div>
+
+  <!-- ALL -->
+  <div class="page" id="page-all">
+    <div class="topbar">
+      <h1>All Documents Sent to BM</h1>
+      <div class="search-bar">
+        <svg width="14" height="14" fill="none" stroke="#6f83a6" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search documents..." oninput="filterDocs(this.value)">
+      </div>
+    </div>
+    <div class="filter-tabs" id="allFilterTabs"></div>
+    <div class="card">
+      <div class="list-head"><div style="flex:1">Name</div><div style="width:110px">Status</div><div style="width:150px"></div></div>
+      <div id="allListBody"></div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="page" id="page-activity">
+    <div class="topbar"><h1>Activity</h1></div>
+    <div class="card">
+      <div class="activity-list" id="fullActivityList">
+        <div class="empty-state">Loading activity…</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ VIEW / REVIEW MODAL ══ -->
+<div class="modal-overlay" id="viewModalOverlay" onclick="closeViewModal(event)">
+  <div class="view-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="viewModalTitle">Document Details</div>
+      <button class="modal-close" onclick="closeViewModal()">✕</button>
+    </div>
+    <div class="view-modal-body">
+      <div class="doc-preview">
+        <div class="doc-big-icon" id="vmIcon">📄</div>
+        <div class="doc-preview-name" id="vmName">—</div>
+        <div class="doc-preview-sub" id="vmSub">—</div>
+      </div>
+      <div class="doc-meta">
+        <div class="meta-item"><div class="meta-label">File Type</div><div class="meta-value" id="vmType">—</div></div>
+        <div class="meta-item"><div class="meta-label">File Size</div><div class="meta-value" id="vmSize">—</div></div>
+        <div class="meta-item"><div class="meta-label">Uploaded</div><div class="meta-value" id="vmDate">—</div></div>
+        <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value" id="vmStatus">—</div></div>
+      </div>
+      <div class="sent-to-label">Also Sent To</div>
+      <div class="sent-to-chips" id="vmSentTo"></div>
+      <div class="send-note-label">Review note (optional)</div>
+      <textarea class="send-note" id="reviewNote" placeholder="Add a note — required when returning a document..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-secondary" onclick="closeViewModal()">Close</button>
+      <button class="modal-btn-return" onclick="returnDoc()">↩ Return for Revision</button>
+      <button class="modal-btn-approve" onclick="approveDoc()">✓ Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KEBAB ROW MENU ══ -->
+<div class="kebab-menu" id="kebabMenu" onclick="event.stopPropagation()">
+  <div class="kebab-file-label" id="kebabFileLabel">—</div>
+  <div id="kebabMenuItems"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toastMsg">Document approved</span></div>
+
+<!-- ══ FIREBASE SDK ══ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-database-compat.min.js"></script>
+
+<script>
+// ── FIREBASE INIT (same project as the secretary portal) ──
+const firebaseConfig = {
+  apiKey: "AIzaSyCSE-SV_cM2PM50OQvJsiSSKEyeb_hJhcI",
+  authDomain: "nfa-routing-docs.firebaseapp.com",
+  databaseURL: "https://nfa-routing-docs-default-rtdb.firebaseio.com",
+  projectId: "nfa-routing-docs",
+  storageBucket: "nfa-routing-docs.firebasestorage.app",
+  messagingSenderId: "653280122829",
+  appId: "1:653280122829:web:88d15ac6eb2631e9231684",
+  measurementId: "G-P9JCFE1F93"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const filesRef = db.ref('files');
+const activityRef = db.ref('activity');
+const MY_DEPT = 'BM';
+
+function dbCatch(label) { return err => { console.error(label, err); showToast('⚠ ' + label + ' failed'); }; }
+
+db.ref('.info/connected').on('value', snap => {
+  const pill = document.getElementById('connPill');
+  if (snap.val() === true) { pill.classList.add('online'); pill.innerHTML = '<span class="status-dot"></span>Online'; }
+  else { pill.classList.remove('online'); pill.innerHTML = '<span class="status-dot"></span>Offline'; }
+});
+
+let files = [];
+let bmFiles = [];
+let activityEntries = [];
+let activeFileId = null;
+let currentSearch = '';
+let allFilter = 'all';
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'Just now';
+  if (min < 60) return min + (min === 1 ? ' minute ago' : ' minutes ago');
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + (hr === 1 ? ' hour ago' : ' hours ago');
+  const day = Math.floor(hr / 24);
+  if (day === 1) return 'Yesterday';
+  if (day < 7) return day + ' days ago';
+  return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+filesRef.on('value', snap => {
+  const val = snap.val() || {};
+  files = Object.keys(val).map(id => {
+    const r = val[id] || {};
+    return {
+      id, name:r.name, ext:r.ext, icon:r.icon, cls:r.cls, size:r.size,
+      date:r.date, status:r.status || 'pending',
+      sentTo: Object.keys(r.sentTo || {}),
+      bmStatus: r.bmStatus || null, // 'approved' | 'returned' | null
+      ts: r.ts || 0,
+    };
+  }).sort((a,b) => b.ts - a.ts);
+
+  bmFiles = files.filter(f => f.sentTo.includes(MY_DEPT));
+
+  renderAll();
+
+  if (activeFileId && !files.find(f => f.id === activeFileId)) { closeViewModal(); activeFileId = null; }
+}, dbCatch('Loading documents'));
+
+activityRef.on('value', snap => {
+  const val = snap.val() || {};
+  activityEntries = Object.keys(val).map(id => ({ id, ...val[id] })).sort((a,b) => b.ts - a.ts);
+  renderActivity();
+}, dbCatch('Loading activity'));
+
+function renderActivity() {
+  const itemHtml = a => `<div class="act-item"><div class="act-dot ${a.color}"></div><div><div class="act-text">${a.text}</div><div class="act-time">${timeAgo(a.ts)}</div></div></div>`;
+  const empty = '<div class="empty-state">No activity yet</div>';
+  document.getElementById('fullActivityList').innerHTML = activityEntries.slice(0,60).map(itemHtml).join('') || empty;
+}
+
+function switchPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+function filterDocs(q) { currentSearch = q.toLowerCase(); renderAll(); }
+
+function statusBadge(f) {
+  if (f.bmStatus === 'approved') return `<span class="status-badge approved">Approved</span>`;
+  if (f.bmStatus === 'returned') return `<span class="status-badge returned">Returned</span>`;
+  const labels = { approved:'Approved', pending:'Pending', review:'In Review', sent:'Sent' };
+  return `<span class="status-badge ${f.status}">${labels[f.status]||f.status} — Needs Review</span>`;
+}
+
+function otherDepts(f) {
+  const others = f.sentTo.filter(d => d !== MY_DEPT);
+  return others.length ? others.join(', ') : null;
+}
+
+function fileRow(f, opts) {
+  opts = opts || {};
+  const others = otherDepts(f);
+  return `
+    <div class="file-row">
+      <div class="file-icon ${f.cls}">${f.icon}</div>
+      <div class="file-main" onclick="openViewModal('${f.id}')">
+        <div class="file-title">${f.name}</div>
+        <div class="file-sub">${others ? `<span class="sub-other">also: ${others}</span><span class="dot"></span>` : ''}${f.date}<span class="dot"></span>${f.size}</div>
+      </div>
+      ${statusBadge(f)}
+      <div class="row-actions">
+        <button class="kebab-btn" onclick="toggleKebabMenu(event,'${f.id}')" id="kebab-btn-${f.id}" title="More actions">⋮</button>
+      </div>
+    </div>`;
+}
+
+// ── KEBAB ROW MENU ──
+let kebabFileId = null;
+
+function toggleKebabMenu(e, id) {
+  e.stopPropagation();
+  const menu = document.getElementById('kebabMenu');
+  const btn  = document.getElementById('kebab-btn-' + id);
+  const wasOpenForSameFile = menu.classList.contains('open') && kebabFileId === id;
+  closeKebabMenu();
+  if (wasOpenForSameFile) return;
+  kebabFileId = id;
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+
+  document.getElementById('kebabFileLabel').textContent = f.name;
+  const actionable = !f.bmStatus;
+  document.getElementById('kebabMenuItems').innerHTML = `
+    <div class="kebab-item" onclick="kebabView()">👁 View Details</div>
+    <div class="kebab-divider"></div>
+    ${actionable ? `
+      <div class="kebab-item approve" onclick="kebabApprove()">✓ Approve</div>
+      <div class="kebab-item return" onclick="kebabReturn()">↩ Return for Revision</div>
+    ` : `
+      <div class="kebab-item disabled">${f.bmStatus === 'approved' ? '✓ Already approved' : '↩ Already returned'}</div>
+    `}
+  `;
+
+  btn.classList.add('open');
+  menu.classList.add('open');
+  positionKebabMenu(btn, menu);
+}
+
+function positionKebabMenu(btn, menu) {
+  const r = btn.getBoundingClientRect();
+  const menuW = 240;
+  let left = r.right - menuW;
+  let top  = r.bottom + 6;
+  if (left < 8) left = 8;
+  if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+  const estHeight = menu.scrollHeight || 160;
+  if (top + estHeight > window.innerHeight - 8) top = Math.max(8, r.top - estHeight - 6);
+  menu.style.left = left + 'px';
+  menu.style.top  = top + 'px';
+}
+
+function closeKebabMenu() {
+  document.getElementById('kebabMenu').classList.remove('open');
+  document.querySelectorAll('.kebab-btn.open').forEach(b => b.classList.remove('open'));
+  kebabFileId = null;
+}
+
+function kebabView() { const id = kebabFileId; closeKebabMenu(); openViewModal(id); }
+function kebabApprove() { const id = kebabFileId; closeKebabMenu(); quickApprove({stopPropagation(){}}, id); }
+function kebabReturn() { const id = kebabFileId; closeKebabMenu(); openViewModal(id); }
+
+document.addEventListener('click', closeKebabMenu);
+window.addEventListener('resize', closeKebabMenu);
+document.querySelector('main').addEventListener('scroll', closeKebabMenu);
+
+function renderList(elId, list, emptyMsg, opts) {
+  const el = document.getElementById(elId);
+  if (!list.length) { el.innerHTML = `<div class="empty-state">${emptyMsg}</div>`; return; }
+  el.innerHTML = list.map(f => fileRow(f, opts)).join('');
+}
+
+const ALL_TYPE_GROUPS = {
+  all:  { label:'All',    match: () => true },
+  doc:  { label:'Word',   match: f => ['doc','docx','txt'].includes(f.ext) },
+  xls:  { label:'Excel',  match: f => ['xls','xlsx','csv'].includes(f.ext) },
+  pdf:  { label:'PDF',    match: f => f.ext === 'pdf' },
+  img:  { label:'Images', match: f => ['jpg','jpeg','png','gif','webp','svg'].includes(f.ext) },
+};
+function renderAllFilterTabs() {
+  const box = document.getElementById('allFilterTabs');
+  box.innerHTML = Object.keys(ALL_TYPE_GROUPS).map(key => {
+    const active = allFilter === key ? ' active' : '';
+    return `<div class="filter-tab${active}" onclick="setAllFilter('${key}')">${ALL_TYPE_GROUPS[key].label}</div>`;
+  }).join('');
+}
+function setAllFilter(key) { allFilter = key; renderAllFilterTabs(); renderAll(); }
+
+function searchMatch(f) { return !currentSearch || f.name.toLowerCase().includes(currentSearch); }
+
+function renderAll() {
+  const pending  = bmFiles.filter(f => !f.bmStatus && searchMatch(f));
+  const approved = bmFiles.filter(f => f.bmStatus === 'approved' && searchMatch(f));
+  const returned = bmFiles.filter(f => f.bmStatus === 'returned' && searchMatch(f));
+  const all      = bmFiles.filter(f => ALL_TYPE_GROUPS[allFilter].match(f) && searchMatch(f));
+
+  renderList('inboxListBody', pending, 'Nothing waiting for review — all caught up.', {showQuickActions:true});
+  renderList('approvedListBody', approved, 'No approved documents yet.');
+  renderList('returnedListBody', returned, 'No returned documents.');
+  renderList('allListBody', all, currentSearch ? `No documents match "${currentSearch}".` : 'No documents have been sent to BM yet.');
+
+  document.getElementById('navCountInbox').textContent = pending.length;
+  document.getElementById('navCountInbox').classList.toggle('hide', pending.length === 0);
+}
+renderAllFilterTabs();
+
+// ── VIEW / REVIEW MODAL ──
+function openViewModal(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  activeFileId = id;
+  document.getElementById('viewModalTitle').textContent = f.name;
+  document.getElementById('vmIcon').textContent = f.icon;
+  document.getElementById('vmName').textContent = f.name;
+  document.getElementById('vmSub').textContent  = f.ext.toUpperCase() + ' • ' + f.size;
+  document.getElementById('vmType').textContent = f.ext.toUpperCase();
+  document.getElementById('vmSize').textContent = f.size;
+  document.getElementById('vmDate').textContent = f.date;
+  document.getElementById('vmStatus').innerHTML = statusBadge(f);
+  document.getElementById('reviewNote').value = '';
+  const others = otherDepts(f);
+  document.getElementById('vmSentTo').innerHTML = others
+    ? others.split(', ').map(d => `<div class="sent-to-chip">${d}</div>`).join('')
+    : '<span style="color:var(--muted);font-size:12px;font-style:italic">Sent only to BM</span>';
+  document.getElementById('viewModalOverlay').classList.add('open');
+}
+function closeViewModal(e) {
+  if (e && e.target !== document.getElementById('viewModalOverlay')) return;
+  document.getElementById('viewModalOverlay').classList.remove('open');
+}
+
+function approveDoc() {
+  const f = files.find(x => x.id === activeFileId);
+  if (!f) return;
+  const note = document.getElementById('reviewNote').value.trim();
+  db.ref(`files/${f.id}`).update({ bmStatus:'approved', status:'approved' }).catch(dbCatch('Approving document'));
+  addActivity('green', `BM approved ${f.name}${note ? ' — "' + note + '"' : ''}`);
+  closeViewModal();
+  showToast(`✓ ${f.name} approved`);
+}
+function returnDoc() {
+  const f = files.find(x => x.id === activeFileId);
+  if (!f) return;
+  const note = document.getElementById('reviewNote').value.trim();
+  if (!note) { showToast('⚠ Add a note explaining why this is being returned.'); return; }
+  db.ref(`files/${f.id}`).update({ bmStatus:'returned', status:'pending' }).catch(dbCatch('Returning document'));
+  addActivity('red', `BM returned ${f.name} for revision — "${note}"`);
+  closeViewModal();
+  showToast(`↩ ${f.name} returned for revision`);
+}
+function quickApprove(e, id) {
+  e.stopPropagation();
+  db.ref(`files/${id}`).update({ bmStatus:'approved', status:'approved' }).catch(dbCatch('Approving document'));
+  const f = files.find(x => x.id === id);
+  if (f) addActivity('green', `BM approved ${f.name}`);
+  showToast('✓ Approved');
+}
+function quickReturn(e, id) {
+  e.stopPropagation();
+  openViewModal(id);
+}
+
+// ── ACTIVITY LOG ──
+function addActivity(color, text) { activityRef.push({ color, text, ts: Date.now() }).catch(dbCatch('Logging activity')); }
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
