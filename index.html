@@ -100,9 +100,10 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .card { background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
 .list-head { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--border); font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
 
-.file-row { display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid var(--border); transition:background .12s; }
+.file-row { display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid var(--border); transition:background .12s; cursor:default; }
 .file-row:last-child { border-bottom:none; }
 .file-row:hover { background:var(--hover); }
+.file-row.folder-row { cursor:pointer; }
 
 .row-check { width:17px; height:17px; border-radius:5px; border:1.5px solid var(--border); background:var(--panel2); flex-shrink:0; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-size:11px; transition:border-color .15s,background .15s; }
 .row-check.checked { background:var(--accent); border-color:var(--accent); }
@@ -113,6 +114,7 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .file-icon.xls  { background:rgba(52,211,153,.15); }
 .file-icon.img  { background:rgba(251,191,36,.15); }
 .file-icon.misc { background:rgba(167,139,250,.15); }
+.file-icon.folder { background:rgba(96,165,250,.15); }
 
 .file-main { flex:1; min-width:0; }
 .file-title { font-size:13.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -126,6 +128,7 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .status-badge.pending  { background:rgba(251,191,36,.15);  color:var(--gold); }
 .status-badge.review   { background:rgba(59,130,246,.15); color:var(--accent2); }
 .status-badge.sent     { background:rgba(167,139,250,.15); color:var(--purple); }
+.status-badge.returned { background:rgba(248,113,113,.15); color:var(--red); }
 
 .row-actions { display:flex; gap:6px; align-items:center; flex-shrink:0; }
 .action-btn {
@@ -146,6 +149,15 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .kebab-btn:hover, .kebab-btn.open { border-color:var(--accent); color:var(--accent2); background:rgba(59,130,246,.1); }
 
 .empty-state { padding:60px 20px; text-align:center; color:var(--muted); font-size:13px; }
+
+/* ── BREADCRUMB ── */
+.breadcrumb-bar { display:flex; align-items:center; gap:6px; margin-bottom:14px; flex-wrap:wrap; font-size:12.5px; }
+.crumb { display:flex; align-items:center; gap:6px; }
+.crumb-btn { color:var(--muted); background:none; border:none; cursor:pointer; font-size:12.5px; font-weight:600; padding:4px 6px; border-radius:6px; transition:background .15s,color .15s; }
+.crumb-btn:hover { color:var(--accent2); background:var(--hover); }
+.crumb-btn.current { color:var(--text); cursor:default; }
+.crumb-btn.current:hover { background:none; color:var(--text); }
+.crumb-sep { color:var(--muted); }
 
 /* ── UPLOAD ── */
 .upload-zone { border:2px dashed var(--border); border-radius:var(--radius); padding:40px 20px; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; position:relative; }
@@ -221,6 +233,8 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .modal-btn-secondary:hover { border-color:var(--accent); color:var(--accent2); }
 .modal-btn-primary { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12.5px; font-weight:700; cursor:pointer; }
 .modal-btn-primary:hover { opacity:.87; }
+.modal-btn-danger { background:var(--red); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12.5px; font-weight:700; cursor:pointer; }
+.modal-btn-danger:hover { opacity:.87; }
 
 .send-file-preview { display:flex; align-items:center; gap:12px; background:var(--hover); border-radius:10px; padding:13px 15px; margin-bottom:20px; border:1px solid var(--border); }
 .send-file-preview .sfp-icon { font-size:24px; flex-shrink:0; }
@@ -288,7 +302,7 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .kebab-item.expanded .ki-chev { transform:rotate(90deg); color:var(--accent2); }
 .kebab-item.danger { color:var(--red); }
 .kebab-item.danger:hover { background:rgba(248,113,113,.12); }
-.kebab-submenu { display:none; flex-direction:column; gap:0; padding:2px 0 8px 0; margin-bottom:2px; background:rgba(0,0,0,.14); }
+.kebab-submenu { display:none; flex-direction:column; gap:0; padding:2px 0 8px 0; margin-bottom:2px; background:rgba(0,0,0,.14); max-height:220px; overflow-y:auto; }
 .kebab-submenu.open { display:flex; }
 .kebab-sub-check, .kebab-sub-status { display:flex; align-items:center; gap:12px; padding:10px 18px 10px 42px; border-radius:0; cursor:pointer; font-size:12.5px; color:var(--text); user-select:none; }
 .kebab-sub-check:hover, .kebab-sub-status:hover { background:var(--hover); }
@@ -299,8 +313,26 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 .kebab-status-dot.pending  { background:var(--gold); }
 .kebab-status-dot.review   { background:var(--accent2); }
 .kebab-status-dot.sent     { background:var(--purple); }
+.kebab-status-dot.returned { background:var(--red); }
 .kebab-sub-status.current { color:var(--accent2); font-weight:700; }
 .kebab-divider { height:1px; background:var(--border); margin:6px 0; }
+
+/* ── RETURNED PAGE ── */
+.returned-doc-card { background:var(--panel); border:1px solid var(--border); border-radius:14px; margin-bottom:16px; overflow:hidden; }
+.returned-doc-head { display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid var(--border); cursor:pointer; }
+.returned-doc-head .file-main { flex:1; min-width:0; }
+.returned-doc-comments { padding:14px 20px; display:flex; flex-direction:column; gap:12px; }
+.returned-doc-comments .comments-empty { padding:10px 0; }
+.returned-comment-input-row { display:flex; gap:8px; padding:14px 20px; border-top:1px solid var(--border); align-items:center; }
+.returned-comment-input-row input { flex:1; background:var(--hover); border:1px solid var(--border); color:var(--text); border-radius:9px; padding:9px 13px; font-size:13px; font-family:inherit; outline:none; }
+.returned-comment-input-row input:focus { border-color:var(--accent); }
+
+/* ── PROMPT / CONFIRM MODAL ── */
+.prompt-modal { background:var(--panel); border:1px solid var(--border); border-radius:14px; width:400px; max-width:92vw; overflow:hidden; display:flex; flex-direction:column; }
+.prompt-modal-body { padding:22px; }
+.prompt-modal-body p { font-size:13px; color:var(--muted); line-height:1.6; }
+.prompt-input { width:100%; background:var(--hover); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:10px 13px; font-size:13.5px; font-family:inherit; outline:none; margin-top:10px; }
+.prompt-input:focus { border-color:var(--accent); }
 </style>
 </head>
 <body>
@@ -325,8 +357,8 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
     <a onclick="switchPage('trash',this)">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Trash
     </a>
-    <a onclick="switchPage('chat',this)">
-      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat
+    <a onclick="switchPage('returned',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>Returned
     </a>
     <a onclick="switchPage('pcs',this)">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>PCs
@@ -366,11 +398,13 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
         </button>
         <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.svg,.txt,.csv,.zip,.rar" style="display:none">
-        <button class="btn-secondary" onclick="showToast('📁 Folder created')">
+        <button class="btn-secondary" onclick="openFolderModal('create')">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>New Folder
         </button>
       </div>
     </div>
+
+    <div class="breadcrumb-bar" id="breadcrumbBar" style="display:none"></div>
 
     <div class="upload-zone" id="dropZone" style="margin-bottom:18px;display:none">
       <div class="upload-icon"><svg width="20" height="20" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
@@ -400,12 +434,21 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
     </div>
   </div>
   <div class="page" id="page-trash">
-    <div class="topbar"><h1>Trash</h1></div>
-    <div class="card"><div class="placeholder"><div class="ph-icon">🗑️</div><h3>Trash is empty</h3><p>Deleted files are removed permanently and won't appear here.</p></div></div>
+    <div class="topbar">
+      <h1>Trash</h1>
+      <div style="font-size:11.5px;color:var(--muted);flex:1;min-width:200px;">Files auto-delete forever 30 days after being trashed.</div>
+      <div class="topbar-actions" id="trashBulkActions" style="display:none">
+        <button class="btn-secondary" onclick="restoreSelectedTrash()">↩ Restore Selected</button>
+        <button class="btn-primary" style="background:var(--red)" onclick="deleteSelectedTrash()">🗑️ Delete Forever</button>
+      </div>
+    </div>
+    <div class="card" id="trashCard">
+      <div class="placeholder"><div class="ph-icon">🗑️</div><h3>Trash is empty</h3><p>Files you move to trash will show up here for 30 days before being permanently deleted.</p></div>
+    </div>
   </div>
-  <div class="page" id="page-chat">
-    <div class="topbar"><h1>Chat</h1></div>
-    <div class="card"><div class="placeholder"><div class="ph-icon">💬</div><h3>No conversations yet</h3><p>Chat with teammates about a document from its Send panel.</p></div></div>
+  <div class="page" id="page-returned">
+    <div class="topbar"><h1>Returned</h1></div>
+    <div id="returnedList"></div>
   </div>
   <div class="page" id="page-pcs">
     <div class="topbar"><h1>PCs</h1></div>
@@ -567,25 +610,41 @@ main { flex:1; overflow-y:auto; background:var(--bg); }
 <!-- ══ KEBAB ROW MENU ══ -->
 <div class="kebab-menu" id="kebabMenu" onclick="event.stopPropagation()">
   <div class="kebab-file-label" id="kebabFileLabel">—</div>
-  <div class="kebab-item" onclick="handleKebabOpen()">
-    <div class="ki-left">📂 Open</div>
+  <div id="kebabItemsRoot"></div>
+</div>
+
+<!-- ══ FOLDER NAME / RENAME MODAL ══ -->
+<div class="modal-overlay" id="folderModalOverlay" onclick="closeFolderModal(event)">
+  <div class="prompt-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="folderModalTitle">New Folder</div>
+      <button class="modal-close" onclick="closeFolderModal()">✕</button>
+    </div>
+    <div class="prompt-modal-body">
+      <p id="folderModalDesc">Give your folder a name.</p>
+      <input type="text" class="prompt-input" id="folderNameInput" placeholder="Folder name" maxlength="60" onkeydown="if(event.key==='Enter') submitFolderModal()">
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-secondary" onclick="closeFolderModal()">Cancel</button>
+      <button class="modal-btn-primary" id="folderModalConfirmBtn" onclick="submitFolderModal()">Create Folder</button>
+    </div>
   </div>
-  <div class="kebab-item" onclick="handleKebabDownload()">
-    <div class="ki-left">⬇️ Download</div>
-  </div>
-  <div class="kebab-item" id="kebabStatusToggle" onclick="toggleKebabSection('status')">
-    <div class="ki-left">🏷️ Status</div><span class="ki-chev">▶</span>
-  </div>
-  <div class="kebab-submenu" id="kebabStatusSub"></div>
-  <div class="kebab-item" onclick="handleKebabComment()">
-    <div class="ki-left">💬 Comment</div>
-  </div>
-  <div class="kebab-item" onclick="handleKebabArchive()">
-    <div class="ki-left">🗄️ Archive</div>
-  </div>
-  <div class="kebab-divider"></div>
-  <div class="kebab-item danger" id="kebabDeleteItem" onclick="handleKebabDelete()">
-    <div class="ki-left">🗑️ Move to Trash</div>
+</div>
+
+<!-- ══ GENERIC CONFIRM MODAL ══ -->
+<div class="modal-overlay" id="confirmModalOverlay" onclick="closeConfirmModal(event)">
+  <div class="prompt-modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="confirmModalTitle">Are you sure?</div>
+      <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+    </div>
+    <div class="prompt-modal-body">
+      <p id="confirmModalMsg">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+      <button class="modal-btn-danger" id="confirmModalActionBtn" onclick="runConfirmAction()">Delete</button>
+    </div>
   </div>
 </div>
 
@@ -627,6 +686,10 @@ let currentFilter = 'all';
 let currentSearch = '';
 const selectedRows = new Set();
 
+// folder navigation: null = root. folderPath holds the breadcrumb trail [{id,name}, ...]
+let currentFolderId = null;
+let folderPath = [];
+
 function timeAgo(ts) {
   if (!ts) return '';
   const diff = Date.now() - ts;
@@ -651,14 +714,27 @@ filesRef.on('value', snap => {
       sentTo: Object.keys(r.sentTo || {}),
       comments: Object.keys(r.comments || {}).map(cid => ({ id:cid, ...r.comments[cid] })).sort((a,b) => a.ts - b.ts),
       archived: !!r.archived,
+      trashed: !!r.trashed,
+      trashedAt: r.trashedAt || null,
       dataUrl: r.dataUrl || null,
       ts: r.ts || 0,
+      isFolder: !!r.isFolder,
+      parentId: r.parentId || null,
     };
   }).sort((a,b) => b.ts - a.ts);
+
+  // if the folder we're currently browsing was deleted/trashed elsewhere, bail out to root
+  if (currentFolderId) {
+    const stillThere = files.find(f => f.id === currentFolderId && f.isFolder && !f.trashed);
+    if (!stillThere) { currentFolderId = null; folderPath = []; }
+  }
 
   renderFilterTabs();
   renderFileList();
   renderArchivePage();
+  renderTrashPage();
+  renderReturnedPage();
+  purgeExpiredTrash();
   if (commentsFileId && document.getElementById('commentsModalOverlay').classList.contains('open')) renderCommentsList();
 
   if (activeFileId && !files.find(f => f.id === activeFileId)) { closeViewModal(); closeSendModal(); activeFileId = null; }
@@ -711,13 +787,51 @@ function setFilter(key) { currentFilter = key; renderFilterTabs(); renderFileLis
 
 function filterDocs(q) { currentSearch = q.toLowerCase(); renderFileList(); }
 
+function getFilteredFolders() {
+  // Folders only ever shown while at root of their own parent level; not affected by type filter.
+  return files.filter(f => f.isFolder && !f.trashed && f.parentId === currentFolderId && (!currentSearch || f.name.toLowerCase().includes(currentSearch)));
+}
+
 function getFilteredFiles() {
-  return files.filter(f => !f.archived && TYPE_GROUPS[currentFilter].match(f) && (!currentSearch || f.name.toLowerCase().includes(currentSearch)));
+  return files.filter(f => !f.isFolder && !f.archived && !f.trashed && f.parentId === currentFolderId && TYPE_GROUPS[currentFilter].match(f) && (!currentSearch || f.name.toLowerCase().includes(currentSearch)));
+}
+
+// ── BREADCRUMB ──
+function renderBreadcrumb() {
+  const bar = document.getElementById('breadcrumbBar');
+  if (!folderPath.length) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.display = 'flex';
+  let html = `<div class="crumb"><button class="crumb-btn" onclick="goToFolderPath(-1)">📁 Files</button></div>`;
+  folderPath.forEach((crumb, i) => {
+    const isLast = i === folderPath.length - 1;
+    html += `<span class="crumb-sep">/</span><div class="crumb">${
+      isLast
+        ? `<button class="crumb-btn current">${crumb.name}</button>`
+        : `<button class="crumb-btn" onclick="goToFolderPath(${i})">${crumb.name}</button>`
+    }</div>`;
+  });
+  bar.innerHTML = html;
+}
+function goToFolderPath(index) {
+  if (index < 0) { currentFolderId = null; folderPath = []; }
+  else { folderPath = folderPath.slice(0, index + 1); currentFolderId = folderPath[folderPath.length - 1].id; }
+  selectedRows.clear();
+  renderBreadcrumb();
+  renderFileList();
+}
+function openFolder(id) {
+  const f = files.find(x => x.id === id);
+  if (!f || !f.isFolder) return;
+  folderPath.push({ id: f.id, name: f.name });
+  currentFolderId = f.id;
+  selectedRows.clear();
+  renderBreadcrumb();
+  renderFileList();
 }
 
 // ── RENDER FILE LIST ──
 function statusBadge(s) {
-  const labels = { approved:'Approved', pending:'Pending', review:'In Review', sent:'Sent' };
+  const labels = { approved:'Approved', pending:'Pending', review:'In Review', sent:'Sent', returned:'Returned' };
   return `<span class="status-badge ${s}">${labels[s]||s}</span>`;
 }
 
@@ -731,35 +845,62 @@ function toggleRowCheck(e, id) {
   renderFileList();
 }
 
+function folderChildCount(id) {
+  return files.filter(f => f.parentId === id && !f.trashed && (f.isFolder || !f.archived)).length;
+}
+
 function renderFileList() {
+  renderBreadcrumb();
+  const folders = getFilteredFolders();
   const list = getFilteredFiles();
   const body = document.getElementById('fileListBody');
-  if (!list.length) {
-    body.innerHTML = `<div class="empty-state">${currentSearch ? `No documents match "${currentSearch}".` : 'No documents yet — upload one to get started.'}</div>`;
+
+  if (!folders.length && !list.length) {
+    body.innerHTML = `<div class="empty-state">${currentSearch ? `No documents match "${currentSearch}".` : (currentFolderId ? 'This folder is empty — upload a file or move one in.' : 'No documents yet — upload one to get started.')}</div>`;
     return;
   }
-  body.innerHTML = list.map(f => {
+
+  const folderRows = folders.map(f => {
+    const count = folderChildCount(f.id);
+    const deptSub = f.sentTo.length ? `<span class="sub-dept">${f.sentTo.join(', ')}</span><span class="dot"></span>` : '';
+    return `
+    <div class="file-row folder-row" onclick="openFolder('${f.id}')">
+      ${rowCheck(f.id)}
+      <div class="file-icon folder">📁</div>
+      <div class="file-main">
+        <div class="file-title">${f.name}</div>
+        <div class="file-sub">${deptSub}${count} item${count===1?'':'s'}<span class="dot"></span>${f.date||''}</div>
+      </div>
+      <span class="status-badge" style="background:rgba(96,165,250,.15);color:var(--accent2)">${f.sentTo.length ? 'Sent' : 'Folder'}</span>
+      <div class="row-actions">
+        <button class="kebab-btn" onclick="toggleKebabMenu(event,'${f.id}')" id="kebab-btn-${f.id}" title="More actions">⋮</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const fileRows = list.map(f => {
     const dept = f.sentTo.length ? f.sentTo.join(', ') : 'Unassigned';
     return `
     <div class="file-row">
       ${rowCheck(f.id)}
       <div class="file-icon ${f.cls}">${f.icon}</div>
-      <div class="file-main" onclick="openViewModal('${f.id}')" style="cursor:pointer">
+      <div class="file-main">
         <div class="file-title">${f.name}</div>
         <div class="file-sub"><span class="sub-dept">${dept}</span><span class="dot"></span>${f.date}<span class="dot"></span>${f.size}</div>
       </div>
       ${statusBadge(f.status)}
       <div class="row-actions">
-        <button class="action-btn" onclick="openViewModal('${f.id}')" title="View details">View</button>
         <button class="kebab-btn" onclick="toggleKebabMenu(event,'${f.id}')" id="kebab-btn-${f.id}" title="More actions">⋮</button>
       </div>
     </div>`;
   }).join('');
+
+  body.innerHTML = folderRows + fileRows;
 }
 
 // ── ARCHIVE PAGE ──
 function renderArchivePage() {
-  const archived = files.filter(f => f.archived);
+  const archived = files.filter(f => !f.isFolder && f.archived && !f.trashed);
   const card = document.getElementById('archiveCard');
   if (!archived.length) {
     card.innerHTML = '<div class="placeholder"><div class="ph-icon">🗄️</div><h3>No archived files</h3><p>Files you archive from the Files list will show up here.</p></div>';
@@ -768,7 +909,7 @@ function renderArchivePage() {
   card.innerHTML = archived.map(f => `
     <div class="archive-row">
       <div class="file-icon ${f.cls}">${f.icon}</div>
-      <div class="file-main" onclick="openViewModal('${f.id}')" style="cursor:pointer">
+      <div class="file-main">
         <div class="file-title">${f.name}</div>
         <div class="file-sub">${f.date}<span class="dot"></span>${f.size}</div>
       </div>
@@ -784,7 +925,180 @@ function restoreFile(id) {
   showToast(`↩ ${f.name} restored`);
 }
 
-// ── VIEW MODAL ──
+// ── TRASH PAGE ──
+const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days, e.g. trashed Jan 1 -> gone Jan 31/Feb 1
+const selectedTrash = new Set();
+
+function daysLeft(trashedAt) {
+  if (!trashedAt) return 30;
+  const remainingMs = (trashedAt + TRASH_RETENTION_MS) - Date.now();
+  return Math.max(0, Math.ceil(remainingMs / (24 * 60 * 60 * 1000)));
+}
+
+function purgeExpiredTrash() {
+  const now = Date.now();
+  files.filter(f => f.trashed && f.trashedAt && (now - f.trashedAt) >= TRASH_RETENTION_MS)
+    .forEach(f => {
+      db.ref(`files/${f.id}`).remove().catch(dbCatch('Auto-deleting expired trash'));
+      addActivity('gold', `${f.name} permanently deleted (30 days in trash)`);
+    });
+}
+
+function trashCheck(id) {
+  return `<div class="row-check${selectedTrash.has(id)?' checked':''}" onclick="toggleTrashCheck(event,'${id}')">${selectedTrash.has(id)?'✓':''}</div>`;
+}
+function toggleTrashCheck(e, id) {
+  e.stopPropagation();
+  if (selectedTrash.has(id)) selectedTrash.delete(id); else selectedTrash.add(id);
+  renderTrashPage();
+}
+function updateTrashBulkBar() {
+  document.getElementById('trashBulkActions').style.display = selectedTrash.size ? 'flex' : 'none';
+}
+
+function renderTrashPage() {
+  const trashed = files.filter(f => f.trashed);
+  // Drop selections for files no longer trashed (restored/purged elsewhere)
+  [...selectedTrash].forEach(id => { if (!trashed.find(f => f.id === id)) selectedTrash.delete(id); });
+  updateTrashBulkBar();
+
+  const card = document.getElementById('trashCard');
+  if (!trashed.length) {
+    card.innerHTML = '<div class="placeholder"><div class="ph-icon">🗑️</div><h3>Trash is empty</h3><p>Files you move to trash will show up here for 30 days before being permanently deleted.</p></div>';
+    return;
+  }
+  card.innerHTML = trashed.map(f => {
+    const left = daysLeft(f.trashedAt);
+    const icon = f.isFolder ? '📁' : f.icon;
+    const cls = f.isFolder ? 'folder' : f.cls;
+    return `
+    <div class="archive-row">
+      ${trashCheck(f.id)}
+      <div class="file-icon ${cls}">${icon}</div>
+      <div class="file-main">
+        <div class="file-title">${f.name}</div>
+        <div class="file-sub">Trashed ${timeAgo(f.trashedAt)}<span class="dot"></span>${f.size||''}<span class="dot"></span><span style="color:${left<=3?'var(--red)':'var(--muted)'}">${left<=0?'Deleting soon':'Auto-deletes in ' + left + (left===1?' day':' days')}</span></div>
+      </div>
+      <button class="action-btn" onclick="restoreFromTrash('${f.id}')" title="Restore to Files">↩ Restore</button>
+      <button class="action-btn" style="border-color:var(--red);color:var(--red)" onclick="confirmPermanentDelete('${f.id}')" title="Delete forever">🗑️ Delete Forever</button>
+    </div>`;
+  }).join('');
+}
+
+function restoreFromTrash(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  selectedTrash.delete(id);
+  db.ref(`files/${f.id}`).update({ trashed: false, trashedAt: null }).catch(dbCatch('Restoring document'));
+  addActivity('green', `${f.name} restored from trash`);
+  showToast(`↩ ${f.name} restored`);
+}
+function restoreSelectedTrash() {
+  if (!selectedTrash.size) return;
+  const ids = [...selectedTrash];
+  const updates = {};
+  ids.forEach(id => { updates[`files/${id}/trashed`] = false; updates[`files/${id}/trashedAt`] = null; });
+  db.ref().update(updates).catch(dbCatch('Restoring documents'));
+  addActivity('green', `${ids.length} file(s) restored from trash`);
+  showToast(`↩ ${ids.length} file(s) restored`);
+  selectedTrash.clear();
+}
+function permanentlyDeleteFile(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  selectedTrash.delete(id);
+  db.ref(`files/${f.id}`).remove().catch(dbCatch('Deleting document'));
+  addActivity('gold', `${f.name} permanently deleted`);
+  showToast(`🗑️ ${f.name} permanently deleted`);
+}
+function confirmPermanentDelete(id) {
+  const f = files.find(x => x.id === id);
+  if (!f) return;
+  openConfirmModal({
+    title: 'Delete forever?',
+    message: `"${f.name}" will be permanently deleted. This cannot be undone.`,
+    actionLabel: 'Delete Forever',
+    onConfirm: () => permanentlyDeleteFile(id),
+  });
+}
+function deleteSelectedTrash() {
+  if (!selectedTrash.size) return;
+  const ids = [...selectedTrash];
+  openConfirmModal({
+    title: 'Delete forever?',
+    message: `${ids.length} item(s) will be permanently deleted. This cannot be undone.`,
+    actionLabel: 'Delete Forever',
+    onConfirm: () => {
+      const updates = {};
+      ids.forEach(id => { updates[`files/${id}`] = null; });
+      db.ref().update(updates).catch(dbCatch('Deleting documents'));
+      addActivity('gold', `${ids.length} file(s) permanently deleted`);
+      showToast(`🗑️ ${ids.length} file(s) permanently deleted`);
+      selectedTrash.clear();
+    },
+  });
+}
+
+// ── RETURNED PAGE (documents sent back with comments/feedback) ──
+function renderReturnedPage() {
+  const list = document.getElementById('returnedList');
+  if (!list) return;
+  const returned = files.filter(f => !f.isFolder && !f.trashed && f.status === 'returned');
+  if (!returned.length) {
+    list.innerHTML = '<div class="card"><div class="placeholder"><div class="ph-icon">↩️</div><h3>No returned documents</h3><p>Documents marked "Returned" (via a file\'s ⋮ menu → Status) will show up here along with their comments.</p></div></div>';
+    return;
+  }
+  list.innerHTML = returned.map(f => {
+    const dept = f.sentTo.length ? f.sentTo.join(', ') : 'Unassigned';
+    const commentsHtml = f.comments.length
+      ? f.comments.map(c => {
+          const by = c.by || 'Unknown';
+          return `<div class="comment-row">
+            <div class="comment-avatar" style="background:${colorOf(by)}">${initialsOf(by)}</div>
+            <div class="comment-bubble">
+              <div class="comment-by">${by}</div>
+              <div class="comment-text">${c.text}</div>
+              <div class="comment-time">${timeAgo(c.ts)}</div>
+            </div>
+          </div>`;
+        }).join('')
+      : '<div class="comments-empty">No comments yet on this returned document.</div>';
+    return `
+    <div class="returned-doc-card">
+      <div class="returned-doc-head" onclick="openViewModal('${f.id}')">
+        <div class="file-icon ${f.cls}">${f.icon}</div>
+        <div class="file-main">
+          <div class="file-title">${f.name}</div>
+          <div class="file-sub"><span class="sub-dept">${dept}</span><span class="dot"></span>${f.date}<span class="dot"></span>${f.size}</div>
+        </div>
+        ${statusBadge(f.status)}
+      </div>
+      <div class="returned-doc-comments">${commentsHtml}</div>
+      <div class="returned-comment-input-row">
+        <input type="text" id="returnedInput_${f.id}" placeholder="Write a comment..." onkeydown="if(event.key==='Enter') submitReturnedComment('${f.id}')">
+        <button class="comments-send-btn" onclick="submitReturnedComment('${f.id}')">Send</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function submitReturnedComment(fileId) {
+  const f = files.find(x => x.id === fileId);
+  const input = document.getElementById('returnedInput_' + fileId);
+  if (!f || !input) return;
+  const text = input.value.trim();
+  if (!text) return;
+  const by = document.getElementById('sidebarName').textContent;
+  db.ref(`files/${f.id}/comments`).push({ text, by, ts: Date.now() }).catch(dbCatch('Adding comment'));
+  addActivity('blue', `Comment added on ${f.name}`);
+  input.value = '';
+}
+
+// Periodically re-check for expired trash even if no new data event fires
+setInterval(purgeExpiredTrash, 60 * 60 * 1000); // hourly
+
+// ── VIEW (details popup) is now only reachable via the kebab menu "Open" action ──
+
+// ── VIEW MODAL (full document details popup — used by kebab "Open") ──
 function openViewModal(id) {
   const f = files.find(x => x.id === id);
   if (!f) return;
@@ -794,9 +1108,12 @@ function openViewModal(id) {
   if (f.cls === 'img' && f.dataUrl) {
     preview.classList.add('clickable');
     preview.innerHTML = `<img class="doc-preview-img" src="${f.dataUrl}" alt="${f.name}"><div class="doc-preview-name">${f.name}</div><div class="doc-preview-sub">${f.ext.toUpperCase()} • ${f.size} • Click to view full size</div>`;
+  } else if (f.dataUrl) {
+    preview.classList.add('clickable');
+    preview.innerHTML = `<div class="doc-big-icon">${f.icon}</div><div class="doc-preview-name">${f.name}</div><div class="doc-preview-sub">${f.ext.toUpperCase()} • ${f.size} • Click to open ${f.ext.toUpperCase()} file</div>`;
   } else {
     preview.classList.remove('clickable');
-    preview.innerHTML = `<div class="doc-big-icon">${f.icon}</div><div class="doc-preview-name">${f.name}</div><div class="doc-preview-sub">${f.ext.toUpperCase()} • ${f.size}</div>`;
+    preview.innerHTML = `<div class="doc-big-icon">${f.icon}</div><div class="doc-preview-name">${f.name}</div><div class="doc-preview-sub">${f.ext.toUpperCase()} • ${f.size} • No preview available</div>`;
   }
   document.getElementById('vmType').textContent = f.ext.toUpperCase();
   document.getElementById('vmSize').textContent = f.size;
@@ -812,7 +1129,20 @@ function openViewModal(id) {
 }
 function handlePreviewClick() {
   const f = files.find(x => x.id === activeFileId);
-  if (f && f.cls === 'img' && f.dataUrl) openLightbox(f.id);
+  if (!f || !f.dataUrl) return;
+  if (f.cls === 'img') {
+    openLightbox(f.id);
+  } else {
+    // Browsers can't render Office/zip formats inline, so this opens/downloads
+    // the file using its own data so the OS can hand it off to the right app.
+    const a = document.createElement('a');
+    a.href = f.dataUrl;
+    a.download = f.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast(`📂 Opening ${f.name}...`);
+  }
 }
 function closeViewModal(e) {
   if (e && e.target !== document.getElementById('viewModalOverlay')) return;
@@ -902,9 +1232,14 @@ function openSendModal(id) {
   if (!f) return;
   activeFileId = id;
   selectedDepts = [];
-  document.getElementById('smIcon').textContent = f.icon;
+  document.getElementById('smIcon').textContent = f.isFolder ? '📁' : f.icon;
   document.getElementById('smName').textContent = f.name;
-  document.getElementById('smMeta').textContent = f.ext.toUpperCase() + ' • ' + f.size + ' • ' + f.date;
+  if (f.isFolder) {
+    const count = collectDescendantFileIds(f.id).length;
+    document.getElementById('smMeta').textContent = `Folder • ${count} file${count===1?'':'s'} inside • ${f.date||''}`;
+  } else {
+    document.getElementById('smMeta').textContent = f.ext.toUpperCase() + ' • ' + f.size + ' • ' + f.date;
+  }
   document.getElementById('sendNote').value = '';
   document.querySelectorAll('.dept-card').forEach(card => {
     const d = card.dataset.dept;
@@ -928,23 +1263,101 @@ function updateSendInfo() {
   const el = document.getElementById('sendSelInfo');
   el.innerHTML = selectedDepts.length ? `Sending to: <strong>${selectedDepts.join(', ')}</strong>` : 'No departments selected';
 }
+// Walks a folder's subtree and returns the ids of every non-folder file inside it (including nested subfolders).
+function collectDescendantFileIds(folderId) {
+  const result = [];
+  const walk = (pid) => {
+    files.filter(x => x.parentId === pid && !x.trashed).forEach(child => {
+      if (child.isFolder) walk(child.id);
+      else result.push(child.id);
+    });
+  };
+  walk(folderId);
+  return result;
+}
+
 function confirmSend() {
   if (!selectedDepts.length) { showToast('⚠ Please select at least one department.'); return; }
   const f = files.find(x => x.id === activeFileId);
   if (!f) return;
   const updates = {};
-  selectedDepts.forEach(d => { updates[`files/${f.id}/sentTo/${d}`] = true; });
-  if (f.status === 'pending') updates[`files/${f.id}/status`] = 'review';
-  db.ref().update(updates).catch(dbCatch('Sending document'));
-  addActivity('purple', `${f.name} sent to ${selectedDepts.join(', ')}`);
+
+  if (f.isFolder) {
+    // Mark the folder itself (so its row shows a "Sent" badge / departments) and cascade to every file inside it.
+    selectedDepts.forEach(d => { updates[`files/${f.id}/sentTo/${d}`] = true; });
+    const fileIds = collectDescendantFileIds(f.id);
+    fileIds.forEach(fid => {
+      const child = files.find(x => x.id === fid);
+      selectedDepts.forEach(d => { updates[`files/${fid}/sentTo/${d}`] = true; });
+      if (child && child.status === 'pending') updates[`files/${fid}/status`] = 'review';
+    });
+    db.ref().update(updates).catch(dbCatch('Sending folder'));
+    addActivity('purple', `Folder "${f.name}" (${fileIds.length} file${fileIds.length===1?'':'s'}) sent to ${selectedDepts.join(', ')}`);
+    showToast(`✓ Folder sent to ${selectedDepts.join(', ')}`);
+  } else {
+    selectedDepts.forEach(d => { updates[`files/${f.id}/sentTo/${d}`] = true; });
+    if (f.status === 'pending') updates[`files/${f.id}/status`] = 'review';
+    db.ref().update(updates).catch(dbCatch('Sending document'));
+    addActivity('purple', `${f.name} sent to ${selectedDepts.join(', ')}`);
+    showToast(`✓ Sent to ${selectedDepts.join(', ')}`);
+  }
   closeSendModal();
-  showToast(`✓ Sent to ${selectedDepts.join(', ')}`);
+}
+
+// ── FOLDER CREATE / RENAME MODAL ──
+let folderModalMode = 'create'; // 'create' | 'rename'
+let folderModalTargetId = null;
+
+function openFolderModal(mode, id) {
+  folderModalMode = mode;
+  folderModalTargetId = id || null;
+  const titleEl = document.getElementById('folderModalTitle');
+  const descEl  = document.getElementById('folderModalDesc');
+  const btnEl   = document.getElementById('folderModalConfirmBtn');
+  const inputEl = document.getElementById('folderNameInput');
+  if (mode === 'rename') {
+    const f = files.find(x => x.id === id);
+    titleEl.textContent = 'Rename Folder';
+    descEl.textContent = 'Enter a new name for this folder.';
+    btnEl.textContent = 'Rename';
+    inputEl.value = f ? f.name : '';
+  } else {
+    titleEl.textContent = 'New Folder';
+    descEl.textContent = currentFolderId ? 'Create a folder inside the current folder.' : 'Give your folder a name.';
+    btnEl.textContent = 'Create Folder';
+    inputEl.value = '';
+  }
+  document.getElementById('folderModalOverlay').classList.add('open');
+  setTimeout(() => { inputEl.focus(); inputEl.select(); }, 60);
+}
+function closeFolderModal(e) {
+  if (e && e.target !== document.getElementById('folderModalOverlay')) return;
+  document.getElementById('folderModalOverlay').classList.remove('open');
+}
+function submitFolderModal() {
+  const name = document.getElementById('folderNameInput').value.trim();
+  if (!name) { showToast('⚠ Please enter a folder name'); return; }
+  if (folderModalMode === 'rename' && folderModalTargetId) {
+    const f = files.find(x => x.id === folderModalTargetId);
+    db.ref(`files/${folderModalTargetId}/name`).set(name).catch(dbCatch('Renaming folder'));
+    addActivity('blue', `Folder renamed to ${name}`);
+    // keep breadcrumb label in sync immediately
+    const crumb = folderPath.find(c => c.id === folderModalTargetId);
+    if (crumb) crumb.name = name;
+    showToast(`✓ Folder renamed`);
+  } else {
+    const today = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    filesRef.push({ name, isFolder:true, parentId: currentFolderId, date: today, archived:false, trashed:false, ts: Date.now() })
+      .then(() => { addActivity('blue', `Folder "${name}" created`); showToast(`📁 Folder "${name}" created`); })
+      .catch(dbCatch('Creating folder'));
+  }
+  closeFolderModal();
 }
 
 // ── KEBAB ROW MENU ──
 const KEBAB_STATUSES = [
   { key:'approved', label:'Approved' }, { key:'pending', label:'Pending' },
-  { key:'review', label:'In Review' }, { key:'sent', label:'Sent' },
+  { key:'review', label:'In Review' }, { key:'sent', label:'Sent' }, { key:'returned', label:'Returned' },
 ];
 let kebabFileId = null;
 let kebabDeleteArmed = false;
@@ -960,7 +1373,7 @@ function toggleKebabMenu(e, id) {
   const f = files.find(x => x.id === id);
   if (!f) return;
   document.getElementById('kebabFileLabel').textContent = f.name;
-  renderKebabStatusSub(f);
+  renderKebabItems(f);
   btn.classList.add('open');
   menu.classList.add('open');
   positionKebabMenu(btn, menu);
@@ -980,28 +1393,93 @@ function positionKebabMenu(btn, menu) {
 function closeKebabMenu() {
   document.getElementById('kebabMenu').classList.remove('open');
   document.querySelectorAll('.kebab-btn.open').forEach(b => b.classList.remove('open'));
-  document.getElementById('kebabStatusSub').classList.remove('open');
-  document.getElementById('kebabStatusToggle').classList.remove('expanded');
   resetKebabDelete();
   kebabFileId = null;
 }
+
+// Builds the kebab menu contents depending on whether the target row is a folder or a file.
+function renderKebabItems(f) {
+  const root = document.getElementById('kebabItemsRoot');
+  if (f.isFolder) {
+    root.innerHTML = `
+      <div class="kebab-item" onclick="handleKebabOpenFolder()"><div class="ki-left">📂 Open</div></div>
+      <div class="kebab-item" onclick="handleKebabRenameFolder()"><div class="ki-left">✏️ Rename</div></div>
+      <div class="kebab-item" onclick="handleKebabSendFolder()"><div class="ki-left">📤 Send To Department</div></div>
+      <div class="kebab-divider"></div>
+      <div class="kebab-item danger" id="kebabDeleteItem" onclick="handleKebabDeleteFolder()"><div class="ki-left">🗑️ Move to Trash</div></div>
+    `;
+    return;
+  }
+  root.innerHTML = `
+    <div class="kebab-item" onclick="handleKebabOpen()"><div class="ki-left">📂 Open</div></div>
+    <div class="kebab-item" onclick="handleKebabDownload()"><div class="ki-left">⬇️ Download</div></div>
+    <div class="kebab-item" id="kebabStatusToggle" onclick="toggleKebabSection('status')"><div class="ki-left">🏷️ Status</div><span class="ki-chev">▶</span></div>
+    <div class="kebab-submenu" id="kebabStatusSub"></div>
+    <div class="kebab-item" id="kebabMoveToggle" onclick="toggleKebabSection('move')"><div class="ki-left">📦 Move to Folder</div><span class="ki-chev">▶</span></div>
+    <div class="kebab-submenu" id="kebabMoveSub"></div>
+    <div class="kebab-item" onclick="handleKebabComment()"><div class="ki-left">💬 Comment</div></div>
+    <div class="kebab-item" onclick="handleKebabArchive()"><div class="ki-left">🗄️ Archive</div></div>
+    <div class="kebab-divider"></div>
+    <div class="kebab-item danger" id="kebabDeleteItem" onclick="handleKebabDelete()"><div class="ki-left">🗑️ Move to Trash</div></div>
+  `;
+  renderKebabStatusSub(f);
+  renderKebabMoveSub(f);
+}
+
 function toggleKebabSection(section) {
-  const sub    = document.getElementById('kebabStatusSub');
-  const toggle = document.getElementById('kebabStatusToggle');
-  const opening = !sub.classList.contains('open');
+  const sections = ['status','move'];
+  sections.forEach(s => {
+    const sub    = document.getElementById('kebab' + (s==='status'?'Status':'Move') + 'Sub');
+    const toggle = document.getElementById('kebab' + (s==='status'?'Status':'Move') + 'Toggle');
+    if (!sub) return;
+    if (s === section) {
+      const opening = !sub.classList.contains('open');
+      sub.classList.toggle('open', opening);
+      toggle.classList.toggle('expanded', opening);
+    } else {
+      sub.classList.remove('open');
+      if (toggle) toggle.classList.remove('expanded');
+    }
+  });
   resetKebabDelete();
-  sub.classList.toggle('open', opening); toggle.classList.toggle('expanded', opening);
   const menu = document.getElementById('kebabMenu');
   const btn  = document.getElementById('kebab-btn-' + kebabFileId);
   if (btn) positionKebabMenu(btn, menu);
 }
 function renderKebabStatusSub(f) {
   const sub = document.getElementById('kebabStatusSub');
+  if (!sub) return;
   sub.innerHTML = KEBAB_STATUSES.map(s => `
     <div class="kebab-sub-status${f.status === s.key ? ' current' : ''}" onclick="setKebabStatus(event,'${s.key}')">
       <div class="kebab-status-dot ${s.key}"></div><span>${s.label}</span>
       ${f.status === s.key ? '<span style="margin-left:auto;font-size:11px;">✓</span>' : ''}
     </div>`).join('');
+}
+function renderKebabMoveSub(f) {
+  const sub = document.getElementById('kebabMoveSub');
+  if (!sub) return;
+  const folders = files.filter(x => x.isFolder && !x.trashed);
+  const rootOption = `
+    <div class="kebab-sub-status${f.parentId === null ? ' current' : ''}" onclick="moveFileToFolder(event,null)">
+      <span>🏠</span><span>Root (No Folder)</span>
+      ${f.parentId === null ? '<span style="margin-left:auto;font-size:11px;">✓</span>' : ''}
+    </div>`;
+  const folderOptions = folders.map(fd => `
+    <div class="kebab-sub-status${f.parentId === fd.id ? ' current' : ''}" onclick="moveFileToFolder(event,'${fd.id}')">
+      <span>📁</span><span>${fd.name}</span>
+      ${f.parentId === fd.id ? '<span style="margin-left:auto;font-size:11px;">✓</span>' : ''}
+    </div>`).join('');
+  sub.innerHTML = rootOption + folderOptions;
+}
+function moveFileToFolder(e, folderId) {
+  e.stopPropagation();
+  const f = files.find(x => x.id === kebabFileId);
+  if (!f || f.parentId === folderId) return;
+  db.ref(`files/${f.id}/parentId`).set(folderId).catch(dbCatch('Moving document'));
+  const folderName = folderId ? (files.find(x=>x.id===folderId)?.name || 'folder') : 'Root';
+  addActivity('blue', `${f.name} moved to ${folderName}`);
+  showToast(`📦 Moved to ${folderName}`);
+  closeKebabMenu();
 }
 function setKebabStatus(e, statusKey) {
   e.stopPropagation();
@@ -1016,24 +1494,67 @@ function setKebabStatus(e, statusKey) {
   addActivity('gold', `${f.name} marked as ${label}`);
 }
 
-// ── KEBAB: OPEN / DOWNLOAD / COMMENT / ARCHIVE / TRASH ──
+// ── KEBAB: OPEN / DOWNLOAD / COMMENT / ARCHIVE / TRASH (files) ──
+// Kebab "Open" always shows the full document details popup.
 function handleKebabOpen() {
   const id = kebabFileId;
   const f = files.find(x => x.id === id);
   closeKebabMenu();
   if (!f) return;
-  if (f.cls === 'img' && f.dataUrl) openLightbox(f.id);
-  else openViewModal(f.id);
+  openViewModal(f.id);
 }
-function handleKebabDownload() {
+
+// Converts a data: URL into a Blob without needing a network fetch of it,
+// which keeps this working offline / inside the Firebase-synced record.
+function dataUrlToBlob(dataUrl) {
+  const [header, base64] = dataUrl.split(',');
+  const mimeMatch = header.match(/data:(.*?);base64/);
+  const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+// Downloads a file. When the browser supports the File System Access API
+// (Chrome/Edge desktop) this opens the native "Save As" file-explorer dialog
+// so the user can pick exactly where it lands. Everything else falls back to
+// a normal anchor-download, which still goes into the OS's file explorer via
+// the browser's downloads folder / save prompt.
+async function handleKebabDownload() {
   const f = files.find(x => x.id === kebabFileId);
   closeKebabMenu();
   if (!f) return;
-  if (f.dataUrl) {
-    const a = document.createElement('a');
-    a.href = f.dataUrl; a.download = f.name;
-    document.body.appendChild(a); a.click(); a.remove();
+  if (!f.dataUrl) {
+    showToast(`⚠ ${f.name} has no stored file data to download`);
+    return;
   }
+
+  if (window.showSaveFilePicker) {
+    try {
+      const blob = dataUrlToBlob(f.dataUrl);
+      const handle = await window.showSaveFilePicker({ suggestedName: f.name });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      showToast(`⬇️ ${f.name} saved`);
+      addActivity('blue', `${f.name} downloaded`);
+      return;
+    } catch (err) {
+      // User cancelled the picker — do nothing further.
+      if (err && err.name === 'AbortError') return;
+      console.error('Save picker failed, falling back to direct download', err);
+    }
+  }
+
+  // Fallback: standard browser download (goes to the Downloads folder,
+  // or triggers the browser's own "Save As" prompt depending on settings).
+  const a = document.createElement('a');
+  a.href = f.dataUrl;
+  a.download = f.name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   showToast(`⬇️ Downloading ${f.name}...`);
   addActivity('blue', `${f.name} downloaded`);
 }
@@ -1060,14 +1581,82 @@ function handleKebabDelete() {
   if (!f) return;
   const item = document.getElementById('kebabDeleteItem');
   if (!kebabDeleteArmed) { kebabDeleteArmed = true; item.innerHTML = '<div class="ki-left">⚠️ Click again to confirm</div>'; return; }
-  db.ref(`files/${f.id}`).remove().catch(dbCatch('Deleting document'));
+  // Move to Trash (soft delete). The file stays in the DB, flagged as trashed,
+  // and is auto-purged 30 days after this timestamp (see purgeExpiredTrash).
+  db.ref(`files/${f.id}`).update({ trashed: true, trashedAt: Date.now() }).catch(dbCatch('Moving document to trash'));
   addActivity('gold', `${f.name} moved to trash`);
-  showToast(`🗑️ ${f.name} moved to trash`);
+  showToast(`🗑️ ${f.name} moved to trash — auto-deletes in 30 days`);
   closeKebabMenu();
 }
+
+// ── KEBAB: OPEN / RENAME / TRASH (folders) ──
+function handleKebabOpenFolder() {
+  const id = kebabFileId;
+  closeKebabMenu();
+  if (id) openFolder(id);
+}
+function handleKebabRenameFolder() {
+  const id = kebabFileId;
+  closeKebabMenu();
+  if (id) openFolderModal('rename', id);
+}
+function handleKebabSendFolder() {
+  const id = kebabFileId;
+  closeKebabMenu();
+  if (id) openSendModal(id);
+}
+function handleKebabDeleteFolder() {
+  const f = files.find(x => x.id === kebabFileId);
+  if (!f) return;
+  const item = document.getElementById('kebabDeleteItem');
+  if (!kebabDeleteArmed) { kebabDeleteArmed = true; item.innerHTML = '<div class="ki-left">⚠️ Click again to confirm</div>'; return; }
+  const childCount = files.filter(x => x.parentId === f.id && !x.trashed).length;
+  closeKebabMenu();
+  openConfirmModal({
+    title: 'Move folder to trash?',
+    message: childCount
+      ? `"${f.name}" contains ${childCount} item(s). They'll be moved back to the parent location and the folder will go to Trash.`
+      : `"${f.name}" will be moved to Trash.`,
+    actionLabel: 'Move to Trash',
+    onConfirm: () => {
+      // Eject children up one level so nothing is silently lost inside a trashed folder.
+      const updates = {};
+      files.filter(x => x.parentId === f.id && !x.trashed).forEach(child => {
+        updates[`files/${child.id}/parentId`] = f.parentId;
+      });
+      updates[`files/${f.id}/trashed`] = true;
+      updates[`files/${f.id}/trashedAt`] = Date.now();
+      db.ref().update(updates).catch(dbCatch('Moving folder to trash'));
+      addActivity('gold', `Folder "${f.name}" moved to trash`);
+      showToast(`🗑️ Folder "${f.name}" moved to trash`);
+    },
+  });
+}
+
 document.addEventListener('click', closeKebabMenu);
 window.addEventListener('resize', closeKebabMenu);
 document.querySelector('main').addEventListener('scroll', closeKebabMenu);
+
+// ── GENERIC CONFIRM MODAL ──
+let pendingConfirmAction = null;
+function openConfirmModal({ title, message, actionLabel, onConfirm }) {
+  document.getElementById('confirmModalTitle').textContent = title || 'Are you sure?';
+  document.getElementById('confirmModalMsg').textContent = message || 'This action cannot be undone.';
+  document.getElementById('confirmModalActionBtn').textContent = actionLabel || 'Delete';
+  pendingConfirmAction = onConfirm || null;
+  document.getElementById('confirmModalOverlay').classList.add('open');
+}
+function closeConfirmModal(e) {
+  if (e && e.target !== document.getElementById('confirmModalOverlay')) return;
+  document.getElementById('confirmModalOverlay').classList.remove('open');
+  pendingConfirmAction = null;
+}
+function runConfirmAction() {
+  const action = pendingConfirmAction;
+  document.getElementById('confirmModalOverlay').classList.remove('open');
+  pendingConfirmAction = null;
+  if (action) action();
+}
 
 // ── ACTIVITY LOG ──
 function addActivity(color, text) { activityRef.push({ color, text, ts: Date.now() }).catch(dbCatch('Logging activity')); }
@@ -1143,12 +1732,13 @@ function finishUpload(file, id, ext, icon) {
   const record = {
     name: file.name, ext, icon: icon.emoji, cls: icon.cls,
     size: fmtSize(file.size), date: today, status: 'pending', sentTo: {}, archived: false, ts: Date.now(),
+    parentId: currentFolderId,
   };
-  const isPreviewableImage = icon.cls === 'img' && file.size <= 4 * 1024 * 1024; // 4MB guard for inline preview
+  const canStoreData = file.size <= 4 * 1024 * 1024; // 4MB guard so the record stays a reasonable size
   const pushRecord = () => {
     filesRef.push(record).then(() => {
       addActivity('blue', `${file.name} uploaded`);
-      showToast(`✓ ${file.name} uploaded — click View to manage it`);
+      showToast(`✓ ${file.name} uploaded — open it from the ⋮ menu`);
       setTimeout(() => {
         const item = document.getElementById(id);
         if (item) item.remove();
@@ -1158,7 +1748,7 @@ function finishUpload(file, id, ext, icon) {
       }, 900);
     }).catch(dbCatch('Uploading document'));
   };
-  if (isPreviewableImage) {
+  if (canStoreData) {
     const reader = new FileReader();
     reader.onload = () => { record.dataUrl = reader.result; pushRecord(); };
     reader.onerror = () => pushRecord();
@@ -1170,6 +1760,7 @@ function finishUpload(file, id, ext, icon) {
 
 // ── INIT ──
 renderFilterTabs();
+renderReturnedPage();
 setupUpload('fileInput', 'dropZone', 'uploadProgress');
 </script>
 </body>
