@@ -764,15 +764,16 @@ function switchPage(name, el) {
 
 // ── FILTER TABS ──
 const TYPE_GROUPS = {
-  all:    { label:'All',    match: () => true },
-  doc:    { label:'Word',   match: f => ['doc','docx','txt'].includes(f.ext) },
-  xls:    { label:'Excel',  match: f => ['xls','xlsx','csv'].includes(f.ext) },
-  ppt:    { label:'PPT',    match: f => ['ppt','pptx'].includes(f.ext) },
-  pdf:    { label:'PDF',    match: f => f.ext === 'pdf' },
-  img:    { label:'Images', match: f => ['jpg','jpeg','png','gif','webp','svg'].includes(f.ext) },
-  misc:   { label:'Other',  match: f => !['doc','docx','txt','xls','xlsx','csv','ppt','pptx','pdf','jpg','jpeg','png','gif','webp','svg'].includes(f.ext) },
+  all:    { label:'All',     match: () => true },
+  folder: { label:'Folders', match: () => false }, // folders are handled separately below, never matches a file
+  doc:    { label:'Word',    match: f => ['doc','docx','txt'].includes(f.ext) },
+  xls:    { label:'Excel',   match: f => ['xls','xlsx','csv'].includes(f.ext) },
+  ppt:    { label:'PPT',     match: f => ['ppt','pptx'].includes(f.ext) },
+  pdf:    { label:'PDF',     match: f => f.ext === 'pdf' },
+  img:    { label:'Images',  match: f => ['jpg','jpeg','png','gif','webp','svg'].includes(f.ext) },
+  misc:   { label:'Other',   match: f => !['doc','docx','txt','xls','xlsx','csv','ppt','pptx','pdf','jpg','jpeg','png','gif','webp','svg'].includes(f.ext) },
 };
-const TYPE_ICONS = { all:'✓', doc:'📝', xls:'📊', ppt:'📽️', pdf:'📄', img:'🖼️', misc:'📦' };
+const TYPE_ICONS = { all:'✓', folder:'📁', doc:'📝', xls:'📊', ppt:'📽️', pdf:'📄', img:'🖼️', misc:'📦' };
 
 function renderFilterTabs() {
   const box = document.getElementById('filterTabs');
@@ -788,11 +789,15 @@ function setFilter(key) { currentFilter = key; renderFilterTabs(); renderFileLis
 function filterDocs(q) { currentSearch = q.toLowerCase(); renderFileList(); }
 
 function getFilteredFolders() {
-  // Folders only ever shown while at root of their own parent level; not affected by type filter.
+  // Folders only show when the "All" or "Folders" tab is active — a Word/Excel/etc.
+  // filter should show only matching files, with no folders mixed in.
+  if (currentFilter !== 'all' && currentFilter !== 'folder') return [];
   return files.filter(f => f.isFolder && !f.trashed && f.parentId === currentFolderId && (!currentSearch || f.name.toLowerCase().includes(currentSearch)));
 }
 
 function getFilteredFiles() {
+  // The "Folders" tab shows folders only — no files should appear alongside them.
+  if (currentFilter === 'folder') return [];
   return files.filter(f => !f.isFolder && !f.archived && !f.trashed && f.parentId === currentFolderId && TYPE_GROUPS[currentFilter].match(f) && (!currentSearch || f.name.toLowerCase().includes(currentSearch)));
 }
 
